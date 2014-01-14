@@ -1,0 +1,52 @@
+<?php
+
+// Grab Router Log Files, and place into text file on desktop
+// Written by Craig M. Rosenblum
+
+// include simple dom library
+include_once('simple_html_dom.php');
+
+// test request to the router log files
+$result = get_content('http://192.168.1.1/FW_log.htm','admin','password');
+
+// create dom object
+$dom = new DOMDocument();
+$dom->loadHTML($result);
+
+// get the textarea
+$t = $dom->getElementsByTagName("textarea");
+
+// store this content
+ob_start();
+
+foreach ($t as $tx) {
+  echo $tx->nodeValue;
+}
+
+
+// save this content to a variable named string
+$string = ob_get_clean();
+
+// store the string as a textfile
+$fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/router_logs.txt","wb");
+fwrite($fp,$string);
+fclose($fp);
+
+// file saved
+echo 'router log file saved...';
+
+// curl function
+function get_content($URL,$username,$password){
+	
+	// curl request
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_URL, $URL);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	return $data;
+}
+
+
+?>
